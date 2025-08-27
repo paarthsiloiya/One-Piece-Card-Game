@@ -34,6 +34,9 @@ public class Card : MonoBehaviour
                 startDragRotation = transform.rotation;
                 lastMousePos = mouseWorldPos;
                 isDragging = true;
+                
+                // Reset rotation immediately when picked up
+                transform.rotation = Quaternion.identity;
             }
         }
 
@@ -78,15 +81,23 @@ public class Card : MonoBehaviour
 
             if (hitCollider != null && hitCollider.TryGetComponent(out ICardDropArea dropArea))
             {
+                // Reset rotation when successfully dropped
+                transform.rotation = Quaternion.identity;
+                
                 dropArea.OnCardDrop(this);
+                
+                // Remove card from hand if it was successfully dropped on a drop area
+                if (HandManager.Instance != null && HandManager.Instance.IsCardInHand(gameObject))
+                {
+                    HandManager.Instance.RemoveCardFromHand(gameObject);
+                }
             }
             else
             {
                 transform.position = startDragPos; // reset if not dropped in valid area
+                // Reset rotation when releasing the card (only if not dropped successfully)
+                transform.rotation = startDragRotation;
             }
-            
-            // Reset rotation when releasing the card
-            transform.rotation = startDragRotation;
         }
     }
 
